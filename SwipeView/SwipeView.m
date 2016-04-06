@@ -102,6 +102,7 @@
     _truncateFinalPage = NO;
     _defersItemViewLoading = NO;
     _vertical = NO;
+    _cellSpacing = 0.0f;
     
     _scrollView = [[UIScrollView alloc] init];
     _scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
@@ -362,7 +363,7 @@
         CGFloat itemsWide = (_numberOfItems == 1)? 1.0f: 3.0f;
         if (_vertical)
         {
-            CGFloat scrollHeight = _scrollView.contentSize.height / itemsWide;
+            CGFloat scrollHeight = _scrollView.contentSize.height / itemsWide - self.cellSpacing;
             if (_scrollView.contentOffset.y < scrollHeight)
             {
                 _previousContentOffset.y += scrollHeight;
@@ -377,7 +378,7 @@
         }
         else
         {
-            CGFloat scrollWidth = _scrollView.contentSize.width / itemsWide;
+            CGFloat scrollWidth = _scrollView.contentSize.width / itemsWide - self.cellSpacing;
             if (_scrollView.contentOffset.x < scrollWidth)
             {
                 _previousContentOffset.x += scrollWidth;
@@ -405,7 +406,17 @@
 {
     CGRect frame = self.bounds;
     CGSize contentSize = frame.size;
-    
+    CGSize itemSize = _itemSize;
+
+    if (_vertical)
+    {
+        itemSize.height += _cellSpacing;
+    }
+    else
+    {
+        itemSize.width += _cellSpacing;
+    }
+
     if (_vertical)
     {
         contentSize.width -= (_scrollView.contentInset.left + _scrollView.contentInset.right);
@@ -421,15 +432,15 @@
         {
             if (_vertical)
             {
-                frame = CGRectMake(0.0f, (self.bounds.size.height - _itemSize.height * _itemsPerPage)/2.0f,
-                                   self.bounds.size.width, _itemSize.height * _itemsPerPage);
-                contentSize.height = _itemSize.height * _numberOfItems;
+                frame = CGRectMake(0.0f, (self.bounds.size.height - itemSize.height * _itemsPerPage)/2.0f,
+                                   self.bounds.size.width, itemSize.height * _itemsPerPage);
+                contentSize.height = itemSize.height * _numberOfItems;
             }
             else
             {
-                frame = CGRectMake((self.bounds.size.width - _itemSize.width * _itemsPerPage)/2.0f,
-                                   0.0f, _itemSize.width * _itemsPerPage, self.bounds.size.height);
-                contentSize.width = _itemSize.width * _numberOfItems;
+                frame = CGRectMake((self.bounds.size.width - itemSize.width * _itemsPerPage)/2.0f,
+                                   0.0f, itemSize.width * _itemsPerPage, self.bounds.size.height);
+                contentSize.width = itemSize.width * _numberOfItems;
             }
             break;
         }
@@ -437,13 +448,13 @@
         {
             if (_vertical)
             {
-                frame = CGRectMake(0.0f, 0.0f, self.bounds.size.width, _itemSize.height * _itemsPerPage);
-                contentSize.height = _itemSize.height * _numberOfItems - (self.bounds.size.height - frame.size.height);
+                frame = CGRectMake(0.0f, 0.0f, self.bounds.size.width, itemSize.height * _itemsPerPage);
+                contentSize.height = itemSize.height * _numberOfItems - (self.bounds.size.height - frame.size.height);
             }
             else
             {
-                frame = CGRectMake(0.0f, 0.0f, _itemSize.width * _itemsPerPage, self.bounds.size.height);
-                contentSize.width = _itemSize.width * _numberOfItems - (self.bounds.size.width - frame.size.width);
+                frame = CGRectMake(0.0f, 0.0f, itemSize.width * _itemsPerPage, self.bounds.size.height);
+                contentSize.width = itemSize.width * _numberOfItems - (self.bounds.size.width - frame.size.width);
             }
             break;
         }
@@ -454,11 +465,11 @@
         CGFloat itemsWide = (_numberOfItems == 1)? 1.0f: _numberOfItems * 3.0f;
         if (_vertical)
         {
-            contentSize.height = _itemSize.height * itemsWide;
+            contentSize.height = itemSize.height * itemsWide;
         }
         else
         {
-            contentSize.width = _itemSize.width * itemsWide;
+            contentSize.width = itemSize.width * itemsWide;
         }
     }
     else if (_pagingEnabled && !_truncateFinalPage)
@@ -472,7 +483,7 @@
             contentSize.width = ceilf(contentSize.width / frame.size.width) * frame.size.width;
         }
     }
-    
+
     if (!CGRectEqualToRect(_scrollView.frame, frame))
     {
         _scrollView.frame = frame;
@@ -506,6 +517,7 @@
             CGFloat width = _vertical? self.bounds.size.height: self.bounds.size.width;
             CGFloat x = _vertical? _scrollView.frame.origin.y: _scrollView.frame.origin.x;
             CGFloat itemWidth = _vertical? _itemSize.height: _itemSize.width;
+            itemWidth += _cellSpacing;
             if (offset * itemWidth + x > width)
             {
                 offset -= _numberOfItems;
@@ -526,11 +538,11 @@
         CGPoint center = view.center;
         if (_vertical)
         {
-            center.y = ([self offsetForItemAtIndex:index] + 0.5f) * _itemSize.height + _scrollView.contentOffset.y;
+            center.y = ([self offsetForItemAtIndex:index] + 0.5f) * (_itemSize.height + self.cellSpacing) + _scrollView.contentOffset.y;
         }
         else
         {
-            center.x = ([self offsetForItemAtIndex:index] + 0.5f) * _itemSize.width + _scrollView.contentOffset.x;
+            center.x = ([self offsetForItemAtIndex:index] + 0.5f) * (_itemSize.width + self.cellSpacing) + _scrollView.contentOffset.x;
         }
         
         BOOL disableAnimation = !CGPointEqualToPoint(center, view.center);
@@ -545,7 +557,7 @@
         {
             view.center = CGPointMake(center.x, _scrollView.frame.size.height/2.0f);
         }
-        
+
         view.bounds = CGRectMake(0.0f, 0.0f, _itemSize.width, _itemSize.height);
         
         if (disableAnimation && animationEnabled) [UIView setAnimationsEnabled:YES];
@@ -613,7 +625,7 @@
     [self layOutItemViews];
     [_delegate swipeViewDidScroll:self];
     
-    if (!_defersItemViewLoading || fabs([self minScrollDistanceFromOffset:_lastUpdateOffset toOffset:_scrollOffset]) >= 1.0f)
+    if (!_defersItemViewLoading || fabsf([self minScrollDistanceFromOffset:_lastUpdateOffset toOffset:_scrollOffset]) >= 1.0f)
     {
         //update item index
         _currentItemIndex = [self clampedIndex:roundf(_scrollOffset)];
@@ -773,7 +785,7 @@
         {
             wrappedDistance = -wrappedDistance;
         }
-        return (fabs(directDistance) <= fabs(wrappedDistance))? directDistance: wrappedDistance;
+        return (fabsf(directDistance) <= fabsf(wrappedDistance))? directDistance: wrappedDistance;
     }
     return directDistance;
 }
@@ -794,7 +806,7 @@
 
 - (void)setScrollOffset:(CGFloat)scrollOffset
 {
-    if (fabs(_scrollOffset - scrollOffset) > 0.0001f)
+    if (fabsf(_scrollOffset - scrollOffset) > 0.0001f)
     {
         _scrollOffset = scrollOffset;
         _lastUpdateOffset = _scrollOffset - 1.0f; //force refresh
@@ -926,11 +938,12 @@
 - (void)loadUnloadViews
 {
     //check that item size is known
-    CGFloat itemWidth = _vertical? _itemSize.height: _itemSize.width;
+    CGFloat itemWidth = (_vertical? _itemSize.height: _itemSize.width);
     if (itemWidth)
     {
+        itemWidth += self.cellSpacing;
         //calculate offset and bounds
-        CGFloat width = _vertical? self.bounds.size.height: self.bounds.size.width;
+        CGFloat width = (_vertical? self.bounds.size.height: self.bounds.size.width);
         CGFloat x = _vertical? _scrollView.frame.origin.y: _scrollView.frame.origin.x;
         
         //calculate range
@@ -1145,7 +1158,8 @@
         //update scrollOffset
         CGFloat delta = _vertical? (_scrollView.contentOffset.y - _previousContentOffset.y): (_scrollView.contentOffset.x - _previousContentOffset.x);
         _previousContentOffset = _scrollView.contentOffset;
-        _scrollOffset += delta / (_vertical? _itemSize.height: _itemSize.width);
+        CGFloat itemLength = (_vertical? _itemSize.height: _itemSize.width) + _cellSpacing;
+        _scrollOffset += delta / itemLength;
         
         //update view and call delegate
         [self didScroll];
