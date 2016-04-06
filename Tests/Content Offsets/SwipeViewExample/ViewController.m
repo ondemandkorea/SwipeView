@@ -59,12 +59,27 @@
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Toggle Wrap"
                                                                               style:UIBarButtonItemStylePlain
                                                                              target:self
-                                                                             action:@selector(toggle)];
+                                                                             action:@selector(toggleWrap)];
+
+    //add cell spacing toggle
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Toggle Cellspacing"
+                                                                             style:UIBarButtonItemStylePlain
+                                                                            target:self
+                                                                            action:@selector(toggleCellspacing)];
 }
 
-- (void)toggle
+- (void)toggleWrap
 {
     self.swipeView.wrapEnabled = !self.swipeView.wrapEnabled;
+}
+
+- (void)toggleCellspacing
+{
+    if(self.swipeView.cellSpacing > 0)
+        self.swipeView.cellSpacing = 0;
+    else
+        self.swipeView.cellSpacing = 3.0f;
+    [self.swipeView reloadData];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(__unused UIInterfaceOrientation)interfaceOrientation
