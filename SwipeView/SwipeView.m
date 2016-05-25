@@ -1133,7 +1133,7 @@
 - (void)didTap:(UITapGestureRecognizer *)tapGesture
 {
     CGPoint point = [tapGesture locationInView:_scrollView];
-    NSInteger index = _vertical? (point.y / (_itemSize.height)): (point.x / (_itemSize.width));
+    NSInteger index = _vertical? (point.y / (_itemSize.height + _cellSpacing)): (point.x / (_itemSize.width + _cellSpacing));
     if (_wrapEnabled)
     {
         index = index % _numberOfItems;
