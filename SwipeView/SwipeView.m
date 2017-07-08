@@ -918,6 +918,10 @@
     //get number of items
     _numberOfItems = [_dataSource numberOfItemsInSwipeView:self];
     
+    if(_numberOfItems == 0) {
+        return;
+    }
+    
     //get item size
     CGSize size = [_delegate swipeViewItemSize:self];
     if (!CGSizeEqualToSize(size, CGSizeZero))
